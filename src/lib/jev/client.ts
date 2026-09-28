@@ -6,6 +6,20 @@ import type { Answer, IntentResult } from "./types";
 let client: TypeSafeClient | null = null;
 let warned = false;
 
+/** Which Jev provider to talk to. TypeSafe direct by default; Hack Club AI's proxy as an alternative. */
+export type JevProvider = "typesafe" | "hackclub";
+
+export function jevProvider(): JevProvider {
+  return process.env.JEV_PROVIDER === "hackclub" ? "hackclub" : "typesafe";
+}
+
+const HACKCLUB_DEFAULT_BASE_URL = "https://ai.hackclub.com/proxy/v1/jev";
+
+/** The API key for whichever provider is active. */
+export function activeApiKey(): string | undefined {
+  return jevProvider() === "hackclub" ? process.env.HACKCLUB_API_KEY : process.env.TYPESAFE_API_KEY;
+}
+
 /** A real-looking key: not empty and not a copied placeholder like "sk-..." or "your-key-here". */
 export function looksLikeKey(key: string | undefined): key is string {
   const k = key?.trim() ?? "";
@@ -13,24 +27,31 @@ export function looksLikeKey(key: string | undefined): key is string {
 }
 
 /**
- * Offline by default. The online Jev model is used only when a real API key is set,
- * and NEXT_PUBLIC_USE_MOCK=true can still force offline for UI work and demos.
+ * Offline by default. The online Jev model is used only when a real API key is set for the
+ * active provider, and NEXT_PUBLIC_USE_MOCK=true can still force offline for UI work and demos.
  */
 export function classifierMode(): { mode: "online" | "offline"; reason: string } {
   if (process.env.NEXT_PUBLIC_USE_MOCK === "true") return { mode: "offline", reason: "NEXT_PUBLIC_USE_MOCK=true" };
-  if (!looksLikeKey(process.env.TYPESAFE_API_KEY)) return { mode: "offline", reason: "no TYPESAFE_API_KEY set" };
-  return { mode: "online", reason: `using ${process.env.JEV_MODEL || "jev-latest"}` };
+  const provider = jevProvider();
+  if (!looksLikeKey(activeApiKey())) {
+    const envVar = provider === "hackclub" ? "HACKCLUB_API_KEY" : "TYPESAFE_API_KEY";
+    return { mode: "offline", reason: `no ${envVar} set` };
+  }
+  return { mode: "online", reason: `using ${process.env.JEV_MODEL || "jev-latest"} via ${provider}` };
 }
 
 export function warnMockOnce(reason: string) {
   if (warned) return;
   warned = true;
-  console.info(`[shapeshift] Offline classifier (jev-offline): ${reason}. Add a TypeSafe key to .env.local to go online.`);
+  console.info(`[shapeshift] Offline classifier (jev-offline): ${reason}. Add a TypeSafe or Hack Club key to .env.local to go online.`);
 }
 
 function getClient() {
   if (!client) {
+    const provider = jevProvider();
     client = new TypeSafeClient({
+      apiKey: activeApiKey(),
+      baseURL: provider === "hackclub" ? process.env.HACKCLUB_BASE_URL || HACKCLUB_DEFAULT_BASE_URL : undefined,
       defaultModel: process.env.JEV_MODEL || "jev-latest",
       // One fast attempt: a stale answer is worse than falling back to the mock.
       retry: { maxRetries: 0 },

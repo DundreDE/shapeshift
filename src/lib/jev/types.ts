@@ -20,6 +20,11 @@ export const INTENT_KEYS = [
   "random",
   "goal",
   "note",
+  "weather",
+  "currency",
+  "qrcode",
+  "directions",
+  "password",
   "none",
 ] as const;
 export type IntentKey = (typeof INTENT_KEYS)[number];

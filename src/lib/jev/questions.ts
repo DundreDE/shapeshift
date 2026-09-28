@@ -30,6 +30,11 @@ export const questions = {
     random: "Asking for a random result: rolling dice, flipping a coin, a random number or letting chance pick",
     goal: "Tracking progress toward a numeric target, such as 4 of 12 books read or money saved",
     note: "Writing a thought, idea or note that is none of the above",
+    weather: "Asking what the weather or forecast is like somewhere",
+    currency: "Converting an amount of money from one currency to another",
+    qrcode: "Explicitly asking for a QR code for a link, text or wifi network",
+    directions: "Asking how to get to a place or for directions/navigation to an address",
+    password: "Asking to generate a password or passphrase",
     none: "Too short, unclear or unfinished to tell yet",
   }),
 

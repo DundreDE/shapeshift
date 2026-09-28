@@ -129,6 +129,40 @@ function intentScores(raw: string): Scores {
     s.convert = Math.min(s.convert ?? 0, 1);
   }
   if ((s.goal ?? 0) >= 4.5) s.calc = Math.min(s.calc ?? 0, 1);
+
+  // Weather: forecast words, optionally with a place.
+  if (has(/\b(weather|forecast)\b/, t)) add("weather", 7);
+  if (has(/\bhow (hot|cold|warm)('?s| is| it)?\b/, t)) add("weather", 5);
+  if (has(/\b(rain(y|ing)?|sunny|snow(y|ing)?|cloudy|humid|temperature)\b/, t) && has(/\b(today|tomorrow|tonight|outside|there|in [a-z]+)\b/, t)) add("weather", 3);
+
+  // Currency: an amount with a currency word/symbol, ideally converted to another.
+  const CURRENCY_WORD = /\b(usd|eur|gbp|inr|jpy|aud|cad|chf|cny|sgd|aed|dollars?|euros?|pounds?|rupees?|yen|francs?|yuan|rmb)\b|[$€£¥₹]/;
+  const currencyHits = (t.match(new RegExp(CURRENCY_WORD.source, "g")) ?? []).length;
+  if (currencyHits >= 2 && has(/\b(to|in|into|as)\b/, t)) add("currency", 8);
+  else if (currencyHits >= 1 && num) add("currency", 3.5);
+
+  // QR codes: needs the explicit word "qr".
+  if (has(/\bqr\b/, t)) add("qrcode", 8);
+
+  // Directions: asking how to get somewhere, distinct from booking a trip.
+  if (has(/\b(directions?|navigate) (to|towards?)\b/, t)) add("directions", 7);
+  if (has(/\bhow (do|can|would|will) i (get|drive|walk|travel) (to|towards?)\b/, t)) add("directions", 7);
+  if (has(/\b(way|route) to\b/, t)) add("directions", 4);
+
+  // Passwords: explicit ask to generate/create one.
+  if (has(/\bpassword(s)?\b/, t)) add("password", 6);
+  if (has(/\bpassphrase\b/, t)) add("password", 6);
+
+  // Mutual exclusions for the new intents.
+  if ((s.weather ?? 0) >= 5) {
+    s.convert = Math.min(s.convert ?? 0, 1);
+    s.event = Math.min(s.event ?? 0, 1);
+  }
+  if ((s.currency ?? 0) >= 5) s.convert = Math.min(s.convert ?? 0, 1);
+  if ((s.qrcode ?? 0) >= 5) s.link = Math.min(s.link ?? 0, 1);
+  if ((s.directions ?? 0) >= 4) s.travel = Math.min(s.travel ?? 0, 2);
+  if ((s.password ?? 0) >= 5) s.note = Math.min(s.note ?? 0, 1);
+
   return s;
 }
 

@@ -14,6 +14,11 @@ import { parsePoll } from "@/lib/parse/poll";
 import { parseContact } from "@/lib/parse/contact";
 import { parseLink } from "@/lib/parse/link";
 import { parseNote } from "@/lib/parse/note";
+import { parseWeather } from "@/lib/parse/weather";
+import { parseCurrency } from "@/lib/parse/currency";
+import { parseQrcode } from "@/lib/parse/qrcode";
+import { parseDirections } from "@/lib/parse/directions";
+import { generatePassword, parsePassword } from "@/lib/parse/password";
 import { shades, hexToOklch, oklchToHex } from "@/lib/color";
 
 // Tuesday 22 Sep 2026, 10:00 local
@@ -318,4 +323,41 @@ describe("goal", () => {
   test("slash", () => expect(parseGoal("pages 120/300")).toMatchObject({ current: 120, target: 300 }));
   test("money with k", () => expect(parseGoal("save 50k for a trip, saved 12k")).toMatchObject({ current: 12000, target: 50000 }));
   test("no target", () => expect(parseGoal("learn piano").target).toBeNull());
+});
+
+describe("weather", () => {
+  test("location with day", () => {
+    const w = parseWeather("weather in lisbon tomorrow", REF);
+    expect(w.location).toBe("Lisbon");
+    expect(w.dayLabel).toBe("Tomorrow");
+  });
+  test("forecast, no place", () => expect(parseWeather("what's the forecast today", REF).location).toBeNull());
+  test("no trigger word → not weather", () => expect(parseWeather("lisbon is lovely", REF).location).toBeNull());
+});
+
+describe("currency", () => {
+  test("full conversion", () => expect(parseCurrency("100 usd in eur")).toEqual({ amount: 100, from: "USD", to: "EUR" }));
+  test("words instead of codes", () => expect(parseCurrency("50 euros to gbp")).toEqual({ amount: 50, from: "EUR", to: "GBP" }));
+  test("symbol prefix, no target", () => expect(parseCurrency("$100").from).toBe("USD"));
+  test("no currency → empty", () => expect(parseCurrency("just some text").from).toBeNull());
+});
+
+describe("qrcode", () => {
+  test("explicit trigger with url", () => expect(parseQrcode("qr code for https://vercel.com").payload).toBe("https://vercel.com"));
+  test("bare qr prefix", () => expect(parseQrcode("qr: hello there").payload).toBe("hello there"));
+  test("no payload → null", () => expect(parseQrcode("qr code").payload).toBeNull());
+});
+
+describe("directions", () => {
+  test("directions to", () => expect(parseDirections("directions to the brandenburg gate").destination).toBe("brandenburg gate"));
+  test("how do i get to", () => expect(parseDirections("how do i get to the airport").destination).toBe("airport"));
+  test("empty → null", () => expect(parseDirections("").destination).toBeNull());
+});
+
+describe("password", () => {
+  test("default length", () => expect(parsePassword("generate a password").length).toBe(16));
+  test("explicit length", () => expect(parsePassword("16 character password").length).toBe(16));
+  test("no symbols", () => expect(parsePassword("password with no symbols").symbols).toBe(false));
+  test("letters only", () => expect(parsePassword("letters only password").digits).toBe(false));
+  test("generated password matches requested length", () => expect(generatePassword({ length: 12, upper: true, lower: true, digits: true, symbols: true })).toHaveLength(12));
 });

@@ -38,6 +38,14 @@ const EXAMPLES: [string, string][] = [
   ["random number 1-100", "random"],
   ["read 12 books this year, 4 done", "goal"],
   ["4 of 10 workouts", "goal"],
+  ["weather in lisbon tomorrow", "weather"],
+  ["what's the forecast today", "weather"],
+  ["100 usd in eur", "currency"],
+  ["50 euros to gbp", "currency"],
+  ["qr code for https://vercel.com", "qrcode"],
+  ["directions to the brandenburg gate", "directions"],
+  ["how do i get to the airport", "directions"],
+  ["generate a 16 character password", "password"],
 ];
 
 describe("mock classifier", () => {

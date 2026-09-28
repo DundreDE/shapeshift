@@ -18,6 +18,11 @@ import { completeCountdown, parseCountdown, type CountdownData } from "./countdo
 import { completeTimezone, parseTimezone, type TimezoneData } from "./timezone";
 import { completeRandom, parseRandom, type RandomData } from "./random";
 import { completeGoal, parseGoal, type GoalData } from "./goal";
+import { completeWeather, parseWeather, type WeatherData } from "./weather";
+import { completeCurrency, parseCurrency, type CurrencyData } from "./currency";
+import { completeQrcode, parseQrcode, type QrcodeData } from "./qrcode";
+import { completeDirections, parseDirections, type DirectionsData } from "./directions";
+import { completePassword, parsePassword, type PasswordData } from "./password";
 
 export type ParsedMap = {
   event: EventData;
@@ -39,6 +44,11 @@ export type ParsedMap = {
   random: RandomData;
   goal: GoalData;
   note: NoteData;
+  weather: WeatherData;
+  currency: CurrencyData;
+  qrcode: QrcodeData;
+  directions: DirectionsData;
+  password: PasswordData;
 };
 
 export type ParseContext = { ref?: Date; colorMood?: ColorMood | null };
@@ -68,6 +78,11 @@ export const parsers: { [K in CardIntent]: Parser<K> } = {
   random: { parse: (t) => parseRandom(t), complete: completeRandom },
   goal: { parse: (t) => parseGoal(t), complete: completeGoal },
   note: { parse: (t) => parseNote(t), complete: completeNote },
+  weather: { parse: (t, c) => parseWeather(t, c.ref), complete: completeWeather },
+  currency: { parse: (t) => parseCurrency(t), complete: completeCurrency },
+  qrcode: { parse: (t) => parseQrcode(t), complete: completeQrcode },
+  directions: { parse: (t) => parseDirections(t), complete: completeDirections },
+  password: { parse: (t) => parsePassword(t), complete: completePassword },
 };
 
 export function parseFor<K extends CardIntent>(intent: K, text: string, ctx: ParseContext = {}): ParsedMap[K] {

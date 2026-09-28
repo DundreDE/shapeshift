@@ -12,9 +12,12 @@ import {
   Coffee,
   Contact,
   Focus,
+  KeyRound,
   Link2,
   ListChecks,
+  Navigation,
   Palette,
+  QrCode,
   Repeat,
   Ruler,
   ShoppingCart,
@@ -24,6 +27,8 @@ import {
   Users,
   Vote,
   Wallet,
+  Coins,
+  CloudSun,
 } from "lucide-react";
 import type { CardIntent } from "@/lib/jev/types";
 import { formatAmount } from "@/lib/parse/common";
@@ -34,9 +39,14 @@ import { formatIn } from "@/lib/parse/timezone";
 import type { GatedSignals } from "@/lib/signals";
 import { CalcCard } from "./CalcCard";
 import { CountdownCard } from "./CountdownCard";
+import { CurrencyCard } from "./CurrencyCard";
+import { DirectionsCard } from "./DirectionsCard";
 import { GoalCard } from "./GoalCard";
+import { PasswordCard } from "./PasswordCard";
+import { QrCodeCard } from "./QrCodeCard";
 import { RandomCard } from "./RandomCard";
 import { TimezoneCard } from "./TimezoneCard";
+import { WeatherCard } from "./WeatherCard";
 import { ColorPicker } from "./ColorPicker";
 import { ContactCard } from "./ContactCard";
 import { ConvertCard } from "./ConvertCard";
@@ -255,6 +265,46 @@ export const registry: Registry = {
     edge: (s) => (s.tone ? TONE_EDGE[s.tone] : null),
     summary: (d) => d.title,
     Component: NoteCard,
+  },
+  weather: {
+    label: "Weather",
+    example: "weather in lisbon tomorrow",
+    icon: CloudSun,
+    signals: [],
+    summary: (d) => [d.location ?? "Weather", d.dayLabel].filter(Boolean).join(" · ") || "Weather",
+    Component: WeatherCard,
+  },
+  currency: {
+    label: "Currency",
+    example: "100 usd in eur",
+    icon: Coins,
+    signals: [],
+    summary: (d) => (d.amount !== null && d.from && d.to ? `${d.amount} ${d.from} → ${d.to}` : "Currency"),
+    Component: CurrencyCard,
+  },
+  qrcode: {
+    label: "QR code",
+    example: "qr code for https://vercel.com",
+    icon: QrCode,
+    signals: [],
+    summary: (d) => (d.payload ? `QR · ${d.payload.length > 30 ? `${d.payload.slice(0, 30)}…` : d.payload}` : "QR code"),
+    Component: QrCodeCard,
+  },
+  directions: {
+    label: "Directions",
+    example: "directions to the brandenburg gate",
+    icon: Navigation,
+    signals: [],
+    summary: (d) => (d.destination ? `Directions to ${d.destination}` : "Directions"),
+    Component: DirectionsCard,
+  },
+  password: {
+    label: "Password",
+    example: "generate a 16 character password",
+    icon: KeyRound,
+    signals: [],
+    summary: (d) => `${d.length}-character password`,
+    Component: PasswordCard,
   },
 };
 

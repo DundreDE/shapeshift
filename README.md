@@ -34,17 +34,24 @@ Open http://localhost:3000 and start typing. Press <kbd>/</kbd> to see every car
 
 ### Use the online Jev model (optional)
 
+Two providers work out of the box — pick one with `JEV_PROVIDER`:
+
 ```bash
 cp .env.example .env.local
-# then set TYPESAFE_API_KEY=... (get one at https://console.typesafe.ai/keys)
+# TypeSafe direct (default): set TYPESAFE_API_KEY=... (get one at https://console.typesafe.ai/keys)
+# Hack Club AI proxy: set JEV_PROVIDER=hackclub and HACKCLUB_API_KEY=...
+#   (search "Hack Club AI" / "Hacklab AI" to find the dashboard at ai.hackclub.com)
 ```
 
-Restart `bun dev`. The latency readout in the bottom-right corner switches from `jev-offline` to `jev-1.13.0`. The key is only ever read on the server (`/api/intent`); it never reaches the browser. If the API is unreachable or rate-limited, Shapeshift quietly falls back to offline mode.
+Restart `bun dev`. The latency readout in the bottom-right corner switches from `jev-offline` to the live model name. Whichever key is active is only ever read on the server (`/api/intent`); it never reaches the browser. If the API is unreachable or rate-limited, Shapeshift quietly falls back to offline mode.
 
 | Variable | Default | What it does |
 | --- | --- | --- |
-| `TYPESAFE_API_KEY` | _(empty)_ | Enables the online model. Empty or placeholder values keep you offline. |
-| `JEV_MODEL` | `jev-1.13.0` | Pinned model version. |
+| `JEV_PROVIDER` | `typesafe` | `typesafe` calls console.typesafe.ai directly; `hackclub` calls Hack Club AI's Jev proxy instead. |
+| `TYPESAFE_API_KEY` | _(empty)_ | Enables the online model when `JEV_PROVIDER=typesafe`. Empty or placeholder values keep you offline. |
+| `HACKCLUB_API_KEY` | _(empty)_ | Enables the online model when `JEV_PROVIDER=hackclub`. |
+| `HACKCLUB_BASE_URL` | `https://ai.hackclub.com/proxy/v1/jev` | Override if the proxy address ever changes. |
+| `JEV_MODEL` | `jev-1.13.0` | Pinned model version, same for either provider. |
 | `NEXT_PUBLIC_USE_MOCK` | `false` | `true` forces offline even with a key. |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | Used for Open Graph metadata. |
 
@@ -71,6 +78,11 @@ Restart `bun dev`. The latency readout in the bottom-right corner switches from 
 | Random | `roll 2d6`, `flip a coin`, `pick one: tacos, sushi or pizza` |
 | Goal | `read 12 books this year, 4 done` |
 | Note | anything else |
+| Weather | `weather in lisbon tomorrow` |
+| Currency | `100 usd in eur` |
+| QR code | `qr code for https://vercel.com` |
+| Directions | `directions to the brandenburg gate` |
+| Password | `generate a 16 character password` |
 
 Saved cards live in your browser (`localStorage`) until you delete them. Click one to edit it.
 
