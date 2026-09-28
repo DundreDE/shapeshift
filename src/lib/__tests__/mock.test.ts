@@ -46,6 +46,7 @@ const EXAMPLES: [string, string][] = [
   ["directions to the brandenburg gate", "directions"],
   ["how do i get to the airport", "directions"],
   ["generate a 16 character password", "password"],
+  ["cooking kurs in 5 tagen um 8uhr abend im salon mit peter", "event"],
 ];
 
 describe("mock classifier", () => {

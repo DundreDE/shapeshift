@@ -55,6 +55,15 @@ describe("event", () => {
   test("empty", () => {
     expect(parseEvent("", REF).title).toBe("");
   });
+  test("German: relative date, colloquial pm, location and person", () => {
+    const e = parseEvent("cooking kurs in 5 tagen um 8uhr abend im salon mit peter", REF);
+    expect(e.title).toBe("Cooking kurs");
+    expect(e.people).toEqual(["Peter"]);
+    expect(e.location).toBe("Salon");
+    expect(e.hasTime).toBe(true);
+    expect(e.date?.getHours()).toBe(20);
+    expect(e.date?.getDate()).toBe(REF.getDate() + 5);
+  });
 });
 
 describe("reminder", () => {

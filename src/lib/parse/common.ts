@@ -60,17 +60,42 @@ export type DateHit = {
   index: number;
 };
 
+// German day-part words that hang off a bare hour ("8uhr abend", "8 uhr nachmittags"). chrono's
+// German parser reads them as a separate, vague reference to "this evening" instead of merging
+// them into the time it just found, so a colloquial pm hour comes back as an ambiguous am guess.
+const GERMAN_PM_SUFFIX = /^\s*(abends?|nachmittags?)\b/i;
+const GERMAN_AM_SUFFIX = /^\s*(morgens|vormittags?|mittags?)\b/i;
+
 export function findDate(text: string, ref: Date = new Date()): DateHit | null {
+  // German only kicks in when the English/casual parser finds nothing at all, so no existing
+  // (English) input can ever be re-routed through it.
   const results = chrono.parse(text, ref, { forwardDate: true });
-  if (!results.length) return null;
-  const r = results[0];
+  const r = results[0] ?? chrono.de.parse(text, ref, { forwardDate: true })[0];
+  if (!r) return null;
   // chrono is happy to read a bare number as a date; require something date-like.
   if (/^\d+$/.test(r.text.trim())) return null;
+
+  let matchedText = r.text;
+  let start = r.start.date();
+  if (r.start.isCertain("hour")) {
+    const hour = r.start.get("hour")!;
+    const tail = text.slice(r.index + matchedText.length);
+    const pmSuffix = hour >= 1 && hour <= 11 ? tail.match(GERMAN_PM_SUFFIX) : null;
+    const amSuffix = pmSuffix ? null : tail.match(GERMAN_AM_SUFFIX);
+    if (pmSuffix) {
+      start = new Date(start);
+      start.setHours(hour + 12);
+      matchedText += pmSuffix[0];
+    } else if (amSuffix) {
+      matchedText += amSuffix[0];
+    }
+  }
+
   return {
-    start: r.start.date(),
+    start,
     end: r.end ? r.end.date() : null,
     hasTime: r.start.isCertain("hour"),
-    text: r.text,
+    text: matchedText,
     index: r.index,
   };
 }
